@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Διαγνωστικό τεστ Β΄ ΕΠΑΛ – Εργαστήριο Αυτοματισμών</title>
+<style>
+:root{--ink:#10213a;--blue:#155b99;--bg:#eef6ff;--ok:#15803d;--bad:#b91c1c;--muted:#64748b}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:linear-gradient(135deg,#dbeafe,#f8fafc)}
+header{background:#102a4c;color:white;padding:26px 18px;text-align:center}header h1{margin:0 0 8px;font-size:clamp(1.5rem,3vw,2.3rem)}header p{margin:4px 0}
+.wrap{max-width:1000px;margin:20px auto;padding:0 14px}.panel,.q{background:white;border-radius:17px;padding:20px;box-shadow:0 8px 24px #17385d1c;margin-bottom:15px}.meta{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}.meta label{font-weight:800}.meta input{width:100%;display:block;padding:11px;border:2px solid #cbd5e1;border-radius:10px;margin-top:6px;font:inherit}.tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.tag{background:#dbeafe;color:#174f83;border-radius:999px;padding:6px 10px;font-weight:800}.timer{position:sticky;top:10px;z-index:3;margin-left:auto;width:max-content;background:#102a4c;color:white;padding:10px 16px;border-radius:12px;font-weight:900}.q{border:2px solid transparent}.q.correct{border-color:#22c55e}.q.wrong{border-color:#ef4444}.q p{font-weight:850;line-height:1.4}.cat{display:inline-block;font-size:.82rem;background:#eef2ff;border-radius:999px;padding:4px 9px;margin-bottom:8px;color:#3730a3;font-weight:800}.opts{display:grid;gap:8px}.opts label{background:#eff6ff;padding:10px;border-radius:9px;cursor:pointer}.feedback{font-weight:800;margin-top:8px}.actions{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}.actions button{border:0;border-radius:11px;background:#155b99;color:white;padding:13px 18px;font:inherit;font-weight:850;cursor:pointer}.actions button:disabled{opacity:.45}.result{font-size:1.08rem;font-weight:800;line-height:1.6}.warning{color:var(--bad);font-weight:800}.hidden{display:none}.breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:12px}.scorebox{background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:10px}.small{font-size:.92rem;color:var(--muted)}footer{text-align:center;color:#64748b;padding:24px 10px}@media(max-width:700px){.meta{grid-template-columns:1fr}.timer{top:6px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Διαγνωστικό τεστ – Εργαστήριο Αυτοματισμών</h1>
+<p>Β΄ ΕΠΑΛ • Τομέας Ηλεκτρολογίας, Ηλεκτρονικής & Αυτοματισμού</p>
+<p>Ηλεκτρονόμοι • θερμικά • αυτοσυγκράτηση • κινητήρες • μανδάλωση • χρονικά</p>
+<p>Ε. Κοκκώδης</p>
+</header>
+<main class="wrap">
+<div class="timer" id="timer">30:00</div>
+<section class="panel">
+<div class="meta">
+<label>Ονοματεπώνυμο<input id="studentName" autocomplete="name" required></label>
+<label>Τμήμα<input id="classSection" placeholder="π.χ. Β΄ Ηλεκτρολόγων" required></label>
+<label>Ημερομηνία<input id="testDate" type="date" required></label>
+</div>
+<div class="tags"><span class="tag">30 ερωτήσεις</span><span class="tag">30 λεπτά</span><span class="tag">Τυχαία σειρά</span><span class="tag">Αυτόματη βαθμολόγηση</span><span class="tag">Αποθήκευση στο Drive</span></div>
+<p>Απάντησε σε όλες τις ερωτήσεις και πάτησε <b>Οριστικός έλεγχος</b>. Μετά τον έλεγχο οι απαντήσεις κλειδώνουν και ενεργοποιείται η υποβολή.</p>
+<p class="small">Το τεστ αφορά αποκλειστικά κλασικούς ηλεκτρολογικούς αυτοματισμούς εργαστηρίου. Δεν περιλαμβάνει PLC.</p>
+</section>
+<section id="quiz"></section>
+<div class="actions"><button id="checkBtn">Οριστικός έλεγχος</button><button id="submitBtn" disabled>Υποβολή στο Drive</button></div>
+<div id="message" class="panel result"></div>
+<form id="postForm" class="hidden" method="POST" target="submissionWindow" action="https://script.google.com/macros/s/AKfycbwLxjjxI9PWRlpNiBRtG_8Qd4k1Arv0u0g5FZYYXGyEfacnCPnWGY1HiJcjAphA9-YU/exec"></form>
+</main>
+<footer>Διαγνωστικό τεστ • Εργαστήριο Αυτοματισμών Β΄ ΕΠΑΛ</footer>
+<script>
+const ENDPOINT='https://script.google.com/macros/s/AKfycbwLxjjxI9PWRlpNiBRtG_8Qd4k1Arv0u0g5FZYYXGyEfacnCPnWGY1HiJcjAphA9-YU/exec';
+const QUIZ_CODE='DIAGNOSTIC_B_EPAL_AUTOMATISMOI_LAB_V2_2026';
+const QUIZ_TITLE='Διαγνωστικό τεστ Β΄ ΕΠΑΛ – Εργαστήριο Αυτοματισμών';
+const DURATION_SECONDS=30*60;
+const categoryNames={
+1:'Ηλεκτρονόμοι & βοηθητικές επαφές',
+2:'Θερμικό & προστασία',
+3:'START–STOP & αυτοσυγκράτηση',
+4:'Τριφασικός κινητήρας & αναστροφή',
+5:'Μονοφασικός κινητήρας & μανδάλωση',
+6:'Χρονικές λειτουργίες'
+};
+const source=[
+{c:1,q:'Οι ακροδέκτες Α1 και Α2 ενός ηλεκτρονόμου αντιστοιχούν…',o:['στο πηνίο του','στις κύριες επαφές ισχύος','στο θερμικό','στον κινητήρα'],a:0},
+{c:1,q:'Η βοηθητική επαφή 13–14 ενός ηλεκτρονόμου είναι…',o:['κανονικά ανοικτή (NO)','κανονικά κλειστή (NC)','κύρια επαφή ισχύος','επαφή θερμικού'],a:0},
+{c:1,q:'Η βοηθητική επαφή 21–22 ενός ηλεκτρονόμου είναι…',o:['κανονικά κλειστή (NC)','κανονικά ανοικτή (NO)','επαφή ισχύος του κινητήρα','επαφή γείωσης'],a:0},
+{c:1,q:'Όταν τροφοδοτηθεί το πηνίο ενός ηλεκτρονόμου, τι συμβαίνει στις βοηθητικές επαφές του;',o:['Οι NO κλείνουν και οι NC ανοίγουν','Όλες ανοίγουν','Όλες κλείνουν μόνιμα','Δεν αλλάζει τίποτε'],a:0},
+
+{c:2,q:'Από ποια κατάσταση προστατεύει κυρίως το θερμικό ενός κινητήρα;',o:['Από παρατεταμένη υπερφόρτιση','Από κάθε κεραυνό','Από έλλειψη γείωσης μόνο','Από χαμηλή τάση δικτύου μόνο'],a:0},
+{c:2,q:'Η επαφή 95–96 ενός θερμικού είναι…',o:['κανονικά κλειστή και ανοίγει όταν πέσει το θερμικό','κανονικά ανοικτή και κλείνει πάντα με το START','κύρια επαφή ισχύος','επαφή του χρονορελέ'],a:0},
+{c:2,q:'Η επαφή 97–98 ενός θερμικού χρησιμοποιείται συχνά…',o:['για ένδειξη βλάβης όταν ενεργοποιηθεί το θερμικό','για αυτοσυγκράτηση του ηλεκτρονόμου','ως κύρια επαφή κινητήρα','για αλλαγή φοράς περιστροφής'],a:0},
+{c:2,q:'Όταν ενεργοποιηθεί το θερμικό και ανοίξει η 95–96, τι πρέπει να συμβεί στον ηλεκτρονόμο του κινητήρα;',o:['Να αποδιεγερθεί και να σταματήσει ο κινητήρας','Να παραμείνει υποχρεωτικά ενεργός','Να αντιστρέψει φορά','Να αυξήσει ταχύτητα'],a:0},
+
+{c:3,q:'Το μπουτόν START σε ένα κλασικό κύκλωμα εκκίνησης είναι…',o:['κανονικά ανοικτό (NO)','κανονικά κλειστό (NC)','μόνιμα κλειστό','χρονική επαφή'],a:0},
+{c:3,q:'Το μπουτόν STOP σε ένα κλασικό κύκλωμα εκκίνησης είναι…',o:['κανονικά κλειστό (NC)','κανονικά ανοικτό (NO)','κύρια επαφή ισχύος','επαφή γείωσης'],a:0},
+{c:3,q:'Πώς πραγματοποιείται η αυτοσυγκράτηση ενός ηλεκτρονόμου;',o:['Με μία βοηθητική NO επαφή του ηλεκτρονόμου παράλληλα με το START','Με το θερμικό παράλληλα στο STOP','Με μία ασφάλεια παράλληλα στο πηνίο','Με τη γείωση του κινητήρα'],a:0},
+{c:3,q:'Γιατί ο κινητήρας συνεχίζει να λειτουργεί όταν αφήσουμε το START;',o:['Η επαφή αυτοσυγκράτησης κρατά τροφοδοτημένο το πηνίο','Το START μένει μηχανικά πατημένο','Το θερμικό τροφοδοτεί το πηνίο','Η ασφάλεια κρατά κλειστό το κύκλωμα'],a:0},
+{c:3,q:'Τι συμβαίνει όταν πατήσουμε το STOP σε κύκλωμα αυτοσυγκράτησης;',o:['Διακόπτεται η τροφοδοσία του πηνίου και ο ηλεκτρονόμος πέφτει','Ο κινητήρας αλλάζει φορά','Ενεργοποιείται το θερμικό','Κλείνει η επαφή 13–14'],a:0},
+{c:3,q:'Σε ένα κύκλωμα απλής αυτόματης εκκίνησης τριφασικού κινητήρα, το κύκλωμα ελέγχου τροφοδοτεί κυρίως…',o:['το πηνίο του ηλεκτρονόμου και τις βοηθητικές επαφές','απευθείας τα τρία τυλίγματα ισχύος του κινητήρα','μόνο τον αγωγό προστασίας','μόνο την τριπολική ασφάλεια'],a:0},
+
+{c:4,q:'Πώς αλλάζουμε τη φορά περιστροφής ενός τριφασικού κινητήρα;',o:['Αντιμεταθέτουμε δύο από τις τρεις φάσεις','Αντιμεταθέτουμε φάση και γείωση','Αυξάνουμε την τάση','Αφαιρούμε το θερμικό'],a:0},
+{c:4,q:'Ένα κλασικό κύκλωμα αναστροφής τριφασικού κινητήρα χρησιμοποιεί…',o:['δύο ηλεκτρονόμους, έναν για κάθε φορά','έναν μόνο ηλεκτρονόμο χωρίς άλλες επαφές','μόνο ένα θερμικό χωρίς ηλεκτρονόμους','δύο ασφάλειες αντί για ηλεκτρονόμους'],a:0},
+{c:4,q:'Η ηλεκτρική μανδάλωση σε κύκλωμα αναστροφής γίνεται με…',o:['NC βοηθητική επαφή του ενός ηλεκτρονόμου σε σειρά με το πηνίο του άλλου','NO επαφή του ίδιου ηλεκτρονόμου παράλληλα στο θερμικό','δύο START παράλληλα','τη γείωση των πηνίων'],a:0},
+{c:4,q:'Ποιος είναι ο σκοπός της μηχανικής μανδάλωσης μεταξύ δύο ηλεκτρονόμων αναστροφής;',o:['Να εμποδίζει το ταυτόχρονο κλείσιμό τους','Να αυξάνει την ταχύτητα του κινητήρα','Να ρυθμίζει το θερμικό','Να δημιουργεί χρονική καθυστέρηση'],a:0},
+{c:4,q:'Τι κίνδυνος υπάρχει αν κλείσουν ταυτόχρονα οι δύο ηλεκτρονόμοι αναστροφής χωρίς σωστή μανδάλωση;',o:['Μπορεί να προκληθεί βραχυκύκλωμα μεταξύ φάσεων','Ο κινητήρας απλώς θα γυρίζει πιο αργά','Θα αυξηθεί μόνο ο φωτισμός ένδειξης','Δεν υπάρχει κανένας κίνδυνος'],a:0},
+{c:4,q:'Σε ένα κύκλωμα αναστροφής, πριν δοθεί εντολή για την αντίθετη φορά, είναι βασικό…',o:['να έχει απενεργοποιηθεί ο ηλεκτρονόμος της προηγούμενης φοράς','να έχει παρακαμφθεί το θερμικό','να έχουν βραχυκυκλωθεί δύο φάσεις','να παραμείνουν και οι δύο ηλεκτρονόμοι ενεργοί'],a:0},
+
+{c:5,q:'Ένας συνηθισμένος μονοφασικός επαγωγικός κινητήρας διαθέτει…',o:['κύριο τύλιγμα και βοηθητικό/εκκίνησης','τρία ίδια τυλίγματα 120°','μόνο ένα τύλιγμα χωρίς άλλο στοιχείο','μόνο μόνιμους μαγνήτες'],a:0},
+{c:3,q:'Σε εκκίνηση κινητήρα από δύο ή περισσότερες θέσεις, πώς συνδέονται τα μπουτόν START και STOP;',o:['Τα START παράλληλα μεταξύ τους και τα STOP σε σειρά μεταξύ τους','Τα START σε σειρά και τα STOP παράλληλα','Όλα τα START και STOP παράλληλα','Όλα τα START και STOP σε σειρά'],a:0},
+{c:5,q:'Για να αντιστραφεί η φορά ενός μονοφασικού κινητήρα με κύριο και βοηθητικό τύλιγμα,…',o:['αντιστρέφονται οι συνδέσεις του ενός τυλίγματος ως προς το άλλο','αντιμετατίθενται απλώς φάση και ουδέτερος και στα δύο τυλίγματα','αφαιρείται το βοηθητικό τύλιγμα','αυξάνεται η συχνότητα του δικτύου'],a:0},
+{c:5,q:'Αν ο κινητήρας Μ2 πρέπει να μπορεί να ξεκινήσει μόνο όταν λειτουργεί ήδη ο Μ1, ποια επαφή μπορεί να χρησιμοποιηθεί σε σειρά με το πηνίο του Κ2;',o:['Μία NO βοηθητική επαφή του Κ1','Η NC επαφή 95–96 του θερμικού του Μ2 μόνο','Το START του Μ1 παράλληλα','Μία κύρια επαφή ισχύος του Μ2'],a:0},
+
+{c:6,q:'Τι σημαίνει χρονική λειτουργία delay on (καθυστέρηση στην ενεργοποίηση);',o:['Η έξοδος ενεργοποιείται αφού περάσει ο ρυθμισμένος χρόνος από την εντολή','Η έξοδος ενεργοποιείται αμέσως και σβήνει μετά από χρόνο','Η έξοδος δεν ενεργοποιείται ποτέ','Η έξοδος αλλάζει φορά περιστροφής'],a:0},
+{c:6,q:'Τι σημαίνει χρονική λειτουργία delay off (καθυστέρηση στην απενεργοποίηση);',o:['Μετά την αφαίρεση της εντολής η έξοδος παραμένει ενεργή για τον ρυθμισμένο χρόνο','Η έξοδος περιμένει πριν ενεργοποιηθεί','Η έξοδος δίνει μόνο έναν στιγμιαίο παλμό','Το χρονικό λειτουργεί μόνο με DC'],a:0},
+{c:6,q:'Τι περιγράφει η λειτουργία one-shot;',o:['Δημιουργεί έναν παλμό συγκεκριμένης διάρκειας μετά από διέγερση','Κρατά μόνιμα ενεργή την έξοδο','Αντιστρέφει δύο φάσεις','Απενεργοποιεί το θερμικό'],a:0},
+{c:6,q:'Οι χρονικές επαφές ενός χρονορελέ αλλάζουν κατάσταση…',o:['σύμφωνα με τη χρονική λειτουργία και τον χρόνο που έχει ρυθμιστεί','μόνο όταν πέσει το θερμικό','μόνο όταν αλλάξει η τάση δικτύου από 230 σε 400 V','τυχαία'],a:0},
+{c:6,q:'Σε delay on 5 s, η εντολή παραμένει ενεργή μόνο για 3 s και μετά αφαιρείται. Τι θα συμβεί στην χρονισμένη έξοδο;',o:['Δεν θα προλάβει να ενεργοποιηθεί','Θα ενεργοποιηθεί αμέσως','Θα μείνει ενεργή για πάντα','Θα κάνει αναστροφή κινητήρα'],a:0},
+{c:6,q:'Σε delay off 5 s, η έξοδος είναι ενεργή και αφαιρείται η εντολή. Τι αναμένουμε;',o:['Η έξοδος θα παραμείνει ενεργή περίπου 5 s και μετά θα απενεργοποιηθεί','Η έξοδος θα πέσει αμέσως χωρίς καθυστέρηση','Η έξοδος θα ενεργοποιηθεί μετά από 5 s','Θα ενεργοποιηθεί το θερμικό'],a:0}
+];
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+let questions=source.map((x,i)=>({...x,id:i,order:shuffle(x.o.map((_,j)=>j))}));
+const saved=sessionStorage.getItem(QUIZ_CODE+'_order');
+if(saved){const state=JSON.parse(saved);questions=state.map(s=>({...source[s.id],id:s.id,order:s.order}))}
+else{shuffle(questions);sessionStorage.setItem(QUIZ_CODE+'_order',JSON.stringify(questions.map(x=>({id:x.id,order:x.order}))))}
+const quiz=document.getElementById('quiz'),msg=document.getElementById('message'),checkBtn=document.getElementById('checkBtn'),submitBtn=document.getElementById('submitBtn');
+let hasChecked=false,submitted=false,score=0,categoryScores={};
+testDate.value=new Date().toISOString().slice(0,10);
+quiz.innerHTML=questions.map((x,i)=>`<article class="q" data-i="${i}"><span class="cat">${categoryNames[x.c]}</span><p>${i+1}. ${x.q}</p><div class="opts">${x.order.map(j=>`<label><input type="radio" name="q${i}" value="${j}"> ${x.o[j]}</label>`).join('')}</div><div class="feedback"></div></article>`).join('');
+function allComplete(){return studentName.value.trim()&&classSection.value.trim()&&testDate.value&&questions.every((_,i)=>document.querySelector(`input[name=q${i}]:checked`))}
+function grade(){
+ if(hasChecked)return;
+ if(!allComplete()){msg.innerHTML='<span class="warning">Συμπλήρωσε τα στοιχεία σου και απάντησε σε όλες τις ερωτήσεις.</span>';return}
+ hasChecked=true;score=0;categoryScores={};Object.keys(categoryNames).forEach(k=>categoryScores[k]={ok:0,total:0});
+ document.querySelectorAll('.q').forEach((el,i)=>{const v=+el.querySelector('input:checked').value,q=questions[i],ok=v===q.a;categoryScores[q.c].total++;if(ok){score++;categoryScores[q.c].ok++}el.classList.add(ok?'correct':'wrong');el.querySelector('.feedback').textContent=ok?'Σωστά':'Λάθος';el.querySelectorAll('input').forEach(x=>x.disabled=true)});
+ studentName.disabled=classSection.disabled=testDate.disabled=true;checkBtn.disabled=true;submitBtn.disabled=false;
+ const percent=Math.round(score/questions.length*100);const grade20=(score/questions.length*20).toFixed(1);
+ msg.innerHTML=`Συνολική βαθμολογία: <b>${score}/${questions.length}</b> • ${percent}% • ${grade20}/20<div class="breakdown">${Object.entries(categoryNames).map(([k,n])=>`<div class="scorebox">${n}<br><b>${categoryScores[k].ok}/${categoryScores[k].total}</b></div>`).join('')}</div>`;
+}
+checkBtn.onclick=grade;
+function compactCopy(){
+ const clone=document.documentElement.cloneNode(true),originalInputs=[...document.querySelectorAll('input')],clonedInputs=[...clone.querySelectorAll('input')],stamp=new Date().toISOString();
+ originalInputs.forEach((src,i)=>{const dst=clonedInputs[i];if(!dst)return;if(src.type==='radio'||src.type==='checkbox'){src.checked?dst.setAttribute('checked',''):dst.removeAttribute('checked')}else dst.setAttribute('value',src.value);dst.setAttribute('disabled','')});
+ clone.querySelectorAll('.q').forEach((el,i)=>{const feedback=el.querySelector('.feedback'),q=questions[i];if(feedback&&q&&feedback.textContent.trim()==='Λάθος')feedback.textContent='Λάθος • Σωστή απάντηση: '+q.o[q.a]});
+ clone.querySelectorAll('script').forEach(el=>el.remove());const form=clone.querySelector('#postForm');if(form)form.remove();clone.querySelectorAll('button').forEach(el=>el.setAttribute('disabled',''));
+ const timerCopy=clone.querySelector('#timer');if(timerCopy)timerCopy.textContent='Ολοκληρώθηκε';const messageCopy=clone.querySelector('#message');if(messageCopy)messageCopy.innerHTML=msg.innerHTML+'<br>Υποβλήθηκε: '+new Date(stamp).toLocaleString('el-GR');
+ const meta=document.createElement('meta');meta.name='submission-created-at';meta.content=stamp;clone.querySelector('head').appendChild(meta);return '<!doctype html>'+clone.outerHTML;
+}
+function field(n,v){const i=document.createElement('input');i.type='hidden';i.name=n;i.value=v;postForm.appendChild(i)}
+submitBtn.onclick=()=>{
+ if(!hasChecked){msg.innerHTML='<span class="warning">Πρέπει πρώτα να γίνει ο οριστικός έλεγχος.</span>';return}if(submitted)return;submitted=true;submitBtn.disabled=true;postForm.innerHTML='';
+ const percent=Math.round(score/questions.length*100),grade20=(score/questions.length*20).toFixed(1),answers=questions.map((x,i)=>({id:x.id,category:x.c,selected:+document.querySelector(`input[name=q${i}]:checked`).value,correct:x.a}));
+ [['quizCode',QUIZ_CODE],['quizTitle',QUIZ_TITLE],['studentName',studentName.value],['classSection',classSection.value],['testDate',testDate.value],['score',score],['total',questions.length],['percent',percent],['grade20',grade20],['categoryScores',JSON.stringify(categoryScores)],['answers',JSON.stringify(answers)],['htmlContent',compactCopy()],['userAgent',navigator.userAgent],['submittedAt',new Date().toISOString()]].forEach(x=>field(...x));
+ window.open('','submissionWindow');postForm.submit();msg.innerHTML+=' • Η υποβολή άνοιξε σε νέα καρτέλα.';
+};
+const deadlineKey=QUIZ_CODE+'_deadline';let deadline=Number(sessionStorage.getItem(deadlineKey));if(!deadline||deadline<Date.now())deadline=Date.now()+DURATION_SECONDS*1000;sessionStorage.setItem(deadlineKey,String(deadline));
+setInterval(()=>{if(hasChecked)return;const left=Math.max(0,Math.ceil((deadline-Date.now())/1000));timer.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0');if(left===0)msg.innerHTML='<span class="warning">Ο χρόνος ολοκληρώθηκε. Συμπλήρωσε τυχόν κενά και κάνε οριστικό έλεγχο.</span>'},1000);
+</script>
+</body>
+</html>
