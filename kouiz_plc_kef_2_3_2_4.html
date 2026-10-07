@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Κουίζ: PLC της αγοράς και κύκλος λειτουργίας</title>
+  <style>
+    :root{
+      --bg:#eef7f8;
+      --card:#ffffff;
+      --ink:#1d2b32;
+      --muted:#61717a;
+      --primary:#0f7890;
+      --primary-dark:#0a5f72;
+      --accent:#f28c28;
+      --ok:#1f8a4c;
+      --bad:#c94242;
+      --line:#d7e8ec;
+      --soft:#f6fbfc;
+      --shadow:0 16px 40px rgba(17, 77, 94, .13);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif;
+      background:linear-gradient(135deg,#e9f7f8 0%,#f9fcfd 55%,#fff3e7 100%);
+      color:var(--ink);
+      line-height:1.55;
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 16px 52px}
+    header{
+      background:linear-gradient(135deg,var(--primary),#13a1ba);
+      color:white;
+      border-radius:24px;
+      padding:30px 26px;
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    header:after{
+      content:"PLC";
+      position:absolute;
+      right:26px;
+      bottom:-20px;
+      font-size:120px;
+      font-weight:900;
+      opacity:.10;
+      letter-spacing:4px;
+    }
+    h1{margin:0 0 8px;font-size:clamp(1.45rem,3vw,2.35rem);line-height:1.1}
+    .name{font-size:.78em;font-weight:500;opacity:.9;white-space:nowrap}
+    .subtitle{margin:0;color:#e8fbff;font-size:1.05rem;max-width:780px}
+    .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .tag{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);padding:7px 11px;border-radius:999px;font-weight:600;font-size:.9rem}
+    .toolbar{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0 0}
+    button{
+      border:0;
+      background:var(--primary);
+      color:white;
+      padding:12px 17px;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 8px 18px rgba(15,120,144,.2);
+      transition:.16s transform,.16s background,.16s opacity;
+      font-size:.98rem;
+    }
+    button:hover{background:var(--primary-dark);transform:translateY(-1px)}
+    button.secondary{background:#ffffff;color:var(--primary);border:1px solid var(--line);box-shadow:none}
+    button.secondary:hover{background:#f5fbfc}
+    .grid{display:grid;grid-template-columns:1fr;gap:18px;margin-top:22px}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:22px;
+      box-shadow:var(--shadow);
+    }
+    .section-title{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:1.35rem;color:var(--primary-dark)}
+    .section-title .num{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#e3f5f8;color:var(--primary-dark);font-weight:900}
+    .intro{background:#fffdf9;border-left:5px solid var(--accent)}
+    .intro ul{margin:8px 0 0;padding-left:22px}
+    .question{
+      padding:16px;
+      border:1px solid var(--line);
+      background:var(--soft);
+      border-radius:16px;
+      margin:14px 0;
+    }
+    .q-head{display:flex;gap:10px;align-items:flex-start;margin-bottom:11px}
+    .q-no{min-width:34px;height:34px;border-radius:12px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;color:var(--primary);font-weight:900}
+    .q-text{font-weight:760;font-size:1.03rem;padding-top:4px}
+    .answers{display:grid;gap:9px;margin-left:44px}
+    label.option{
+      display:flex;gap:10px;align-items:flex-start;background:white;border:1px solid #dfecef;border-radius:13px;padding:11px 12px;cursor:pointer;
+      transition:.12s border,.12s background,.12s transform;
+    }
+    label.option:hover{border-color:#9bd0da;transform:translateX(2px)}
+    label.option input{margin-top:4px;accent-color:var(--primary)}
+    .feedback{display:none;margin:12px 0 0 44px;padding:10px 12px;border-radius:12px;font-weight:650}
+    .feedback.ok{display:block;background:#e8f7ee;color:#176239;border:1px solid #bfe6cc}
+    .feedback.bad{display:block;background:#fff0f0;color:#9d2e2e;border:1px solid #f0c0c0}
+    .question.correct{border-color:#98dbb4;background:#f3fbf6}
+    .question.wrong{border-color:#efb2b2;background:#fff8f8}
+    .matching-wrap{display:grid;grid-template-columns:minmax(210px,300px) 1fr;gap:16px;margin-top:12px}
+    .pool,.drop-list{background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:14px;min-height:110px}
+    .pool-title,.match-title{font-weight:850;color:var(--primary-dark);margin-bottom:10px}
+    .pill{
+      display:inline-flex;align-items:center;justify-content:center;
+      margin:6px;padding:9px 11px;background:white;border:1px solid #badde4;border-radius:999px;
+      font-weight:800;cursor:grab;user-select:none;color:#24404a;
+      box-shadow:0 4px 10px rgba(15,120,144,.08);
+    }
+    .pill.selected{outline:3px solid rgba(242,140,40,.32);border-color:var(--accent)}
+    .drop-row{display:grid;grid-template-columns:1fr minmax(170px,260px);gap:10px;align-items:stretch;margin:10px 0}
+    .definition{background:white;border:1px solid #e4eef1;border-radius:13px;padding:11px 12px}
+    .dropzone{background:white;border:2px dashed #a8ced7;border-radius:13px;min-height:48px;display:flex;align-items:center;justify-content:center;padding:6px;text-align:center;color:var(--muted);font-weight:700}
+    .dropzone.over{border-color:var(--accent);background:#fff7ed}
+    .dropzone.correct{border-style:solid;border-color:#70c493;background:#effaf3;color:#176239}
+    .dropzone.wrong{border-style:solid;border-color:#e18f8f;background:#fff0f0;color:#8f2c2c}
+    .result-box{display:none;position:sticky;bottom:12px;z-index:3;margin-top:18px;background:#172b33;color:white;border-radius:18px;padding:18px;box-shadow:0 14px 36px rgba(0,0,0,.22)}
+    .result-box.show{display:block}
+    .scoreline{font-size:1.35rem;font-weight:900;margin-bottom:7px}
+    .small{font-size:.94rem;color:var(--muted)}
+    .result-box .small{color:#d9eef3}
+    .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .legend span{padding:5px 9px;border-radius:999px;background:#eef8fa;color:#31535c;font-size:.87rem;font-weight:700}
+    .note-box{margin-top:12px;padding:12px 14px;border-radius:14px;background:#f6fbfc;border:1px solid #d7e8ec;color:#31535c}
+    @media(max-width:760px){
+      .answers{margin-left:0}
+      .feedback{margin-left:0}
+      .matching-wrap{grid-template-columns:1fr}
+      .drop-row{grid-template-columns:1fr}
+      header{padding:24px 18px}
+      .name{display:block;margin-top:4px}
+    }
+    @media print{
+      body{background:white}
+      header,.card{box-shadow:none}
+      button,.toolbar,.result-box{display:none!important}
+      .question{break-inside:avoid}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Κουίζ: PLC της αγοράς και κύκλος λειτουργίας <span class="name">(Ε. Κοκκώδης)</span></h1>
+      <p class="subtitle">Συστήματα Αυτοματισμών — Κεφάλαια 2.3 και 2.4</p>
+      <div class="meta">
+        <span class="tag">Πολλαπλής επιλογής</span>
+        <span class="tag">Σωστό / Λάθος</span>
+        <span class="tag">Αντιστοίχιση</span>
+        <span class="tag">Πρακτικά σενάρια</span>
+      </div>
+      <div class="toolbar">
+        <button onclick="gradeQuiz()">Έλεγχος απαντήσεων</button>
+        <button class="secondary" onclick="resetQuiz()">Επαναφορά</button>
+        <button class="secondary" onclick="window.print()">Εκτύπωση</button>
+      </div>
+    </header>
+
+    <section class="card intro">
+      <h2 class="section-title"><span class="num">i</span> Οδηγίες</h2>
+      <p>Απάντησε σε όλες τις ερωτήσεις. Στην αντιστοίχιση μπορείς είτε να σύρεις τις καρτέλες είτε να πατήσεις πρώτα μια καρτέλα και μετά το πλαίσιο όπου θέλεις να μπει.</p>
+      <div class="legend">
+        <span>Σύνολο: 24 μονάδες</span>
+        <span>Πολλαπλής: 8</span>
+        <span>Σ/Λ: 6</span>
+        <span>Αντιστοίχιση: 6</span>
+        <span>Σενάρια: 4</span>
+      </div>
+      <div class="note-box"><strong>Θυμήσου:</strong> Το κεφ. 2.3 ξεχωρίζει κυρίως τα modular και τα συμπαγή PLC, ενώ το κεφ. 2.4 εξηγεί τον κύκλο λειτουργίας: διάβασμα εισόδων, εκτέλεση προγράμματος, απόδοση τιμών στις εξόδους.</div>
+    </section>
+
+    <main class="grid">
+      <section class="card" id="mcSection">
+        <h2 class="section-title"><span class="num">1</span> Πολλαπλής επιλογής</h2>
+        <div id="mcQuestions"></div>
+      </section>
+
+      <section class="card" id="tfSection">
+        <h2 class="section-title"><span class="num">2</span> Σωστό / Λάθος</h2>
+        <div id="tfQuestions"></div>
+      </section>
+
+      <section class="card" id="matchSection">
+        <h2 class="section-title"><span class="num">3</span> Αντιστοίχιση: Έννοιες και λειτουργίες PLC</h2>
+        <p class="small">Σύρε κάθε καρτέλα στο σωστό πλαίσιο. Σε κινητό, πάτησε την καρτέλα και μετά πάτησε το πλαίσιο προορισμού.</p>
+        <div class="matching-wrap">
+          <div class="pool" id="pool" ondragover="allowDrop(event)" ondrop="dropToPool(event)">
+            <div class="pool-title">Καρτέλες</div>
+          </div>
+          <div class="drop-list">
+            <div class="match-title">Περιγραφές</div>
+            <div id="matchRows"></div>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="secondary" onclick="resetMatching()">Επαναφορά αντιστοίχισης</button>
+        </div>
+      </section>
+
+      <section class="card" id="scenarioSection">
+        <h2 class="section-title"><span class="num">4</span> Πρακτικά σενάρια</h2>
+        <div id="scenarioQuestions"></div>
+      </section>
+    </main>
+
+    <div class="result-box" id="resultBox">
+      <div class="scoreline" id="scoreLine"></div>
+      <div class="small" id="scoreDetails"></div>
+    </div>
+  </div>
+
+<script>
+const mcQuestions = [
+  {
+    q: "Στα κεφάλαια 2.3 και 2.4, ποιοι δύο βασικοί τύποι PLC παρουσιάζονται στην αγορά;",
+    options: [
+      "Μηχανικά και υδραυλικά PLC.",
+      "PLC μόνο εισόδων και PLC μόνο εξόδων.",
+      "Modular PLC και συμπαγή PLC.",
+      "Αναλογικά PLC και χειροκίνητα PLC."
+    ],
+    correct: 2,
+    fb: "Η ενότητα 2.3 ξεχωρίζει τα modular PLC και τα συμπαγή PLC."
+  },
+  {
+    q: "Τι σημαίνει ότι ένα PLC είναι modular;",
+    options: [
+      "Πωλείται και συγκροτείται από ξεχωριστές μονάδες, όπως τροφοδοτικό, CPU και μονάδες εισόδων/εξόδων.",
+      "Έχει πάντα λιγότερες από 5 εισόδους.",
+      "Δεν χρειάζεται κεντρική μονάδα επεξεργασίας.",
+      "Λειτουργεί μόνο χωρίς πρόγραμμα."
+    ],
+    correct: 0,
+    fb: "Στα modular PLC τα βασικά μέρη επιλέγονται και τοποθετούνται σαν ξεχωριστές μονάδες."
+  },
+  {
+    q: "Ποιο από τα παρακάτω ταιριάζει περισσότερο σε ένα συμπαγές PLC;",
+    options: [
+      "Οι είσοδοι και οι έξοδοι βρίσκονται πάντα σε πολλά ξεχωριστά πλαίσια.",
+      "Είναι πάντοτε μεγαλύτερο από κάθε modular PLC.",
+      "Χρησιμοποιεί μόνο μηχανικούς μοχλούς.",
+      "Τροφοδοτικό, CPU και είσοδοι/έξοδοι είναι ενσωματωμένα σε μία συσκευή."
+    ],
+    correct: 3,
+    fb: "Τα συμπαγή PLC συγκεντρώνουν τις βασικές μονάδες τους μέσα σε μία ενιαία συσκευή."
+  },
+  {
+    q: "Στα modular PLC, γιατί μπορούμε να επιλέγουμε διαφορετικές μονάδες εισόδων ή εξόδων;",
+    options: [
+      "Για να καταργείται το πρόγραμμα του PLC.",
+      "Για να ταιριάζουν στα τεχνικά χαρακτηριστικά που απαιτεί η εφαρμογή, όπως πλήθος και τάση εισόδων/εξόδων.",
+      "Για να μη χρειάζεται τροφοδοσία.",
+      "Για να λειτουργούν όλες οι έξοδοι ως είσοδοι."
+    ],
+    correct: 1,
+    fb: "Η επιλογή μονάδων δίνει ευελιξία σε πλήθος εισόδων/εξόδων και τεχνικά χαρακτηριστικά."
+  },
+  {
+    q: "Σε ένα PLC που βρίσκεται σε κατάσταση RUN, ποιο είναι το πρώτο βήμα του κύκλου λειτουργίας;",
+    options: [
+      "Απόδοση τιμών στις εξόδους.",
+      "Διαγραφή του προγράμματος.",
+      "Διάβασμα των εισόδων και αποθήκευση στην εικόνα εισόδων.",
+      "Αντικατάσταση της CPU."
+    ],
+    correct: 2,
+    fb: "Πρώτα ο μικροεπεξεργαστής διαβάζει τις εισόδους και κρατά τις τιμές τους στην εικόνα εισόδων."
+  },
+  {
+    q: "Τι περιέχει η εικόνα εισόδων;",
+    options: [
+      "Τα μηχανολογικά σχέδια των κινητήρων.",
+      "Τις τελικές εντολές που δίνονται στους αποδέκτες.",
+      "Τις τιμές των χρονικών ρελέ μόνο.",
+      "Την κατάσταση 0 ή 1 που διάβασε το PLC για κάθε είσοδο."
+    ],
+    correct: 3,
+    fb: "Η εικόνα εισόδων είναι περιοχή μνήμης με την κατάσταση κάθε εισόδου."
+  },
+  {
+    q: "Τι γίνεται στο δεύτερο βήμα του κύκλου λειτουργίας του PLC;",
+    options: [
+      "Το PLC σταματά οριστικά τη λειτουργία του.",
+      "Η CPU εκτελεί τις εντολές του προγράμματος χρησιμοποιώντας ως δεδομένα τις τιμές των εισόδων.",
+      "Αλλάζουν μηχανικά όλες οι κλέμες του πίνακα.",
+      "Οι έξοδοι συνδέονται απευθείας με το δίκτυο χωρίς λογική επεξεργασία."
+    ],
+    correct: 1,
+    fb: "Μετά το διάβασμα εισόδων, η CPU εκτελεί το πρόγραμμα και υπολογίζει την κατάσταση των εξόδων."
+  },
+  {
+    q: "Όταν στην εικόνα εξόδων μια έξοδος έχει τιμή 1, τι θα συμβεί στο τρίτο βήμα;",
+    options: [
+      "Στην αντίστοιχη έξοδο θα δοθεί υψηλή τάση.",
+      "Η έξοδος θα παραμείνει υποχρεωτικά χωρίς τάση.",
+      "Θα αλλάξει το όνομα της εισόδου.",
+      "Θα διαγραφεί η εικόνα εισόδων."
+    ],
+    correct: 0,
+    fb: "Στο τρίτο βήμα οι τιμές της εικόνας εξόδων αποδίδονται στις πραγματικές εξόδους."
+  }
+];
+
+const tfQuestions = [
+  {q:"Στα modular PLC οι μονάδες πωλούνται και τοποθετούνται συνήθως ξεχωριστά.", correct:true, fb:"Σωστό. Η modular μορφή σημαίνει σύνθεση από ανεξάρτητες μονάδες."},
+  {q:"Στα συμπαγή PLC όλες οι μονάδες είναι συνήθως ενσωματωμένες σε μία συσκευή.", correct:true, fb:"Σωστό. Αυτό είναι το βασικό χαρακτηριστικό των συμπαγών PLC."},
+  {q:"Στα συμπαγή PLC οι είσοδοι και οι έξοδοι δεν έχουν συγκεκριμένο όνομα.", correct:false, fb:"Λάθος. Κάθε είσοδος ή έξοδος έχει καθορισμένο όνομα που χρησιμοποιείται και στο πρόγραμμα."},
+  {q:"Στον κύκλο λειτουργίας, το PLC εκτελεί συνεχώς τα ίδια βασικά βήματα όσο βρίσκεται σε RUN.", correct:true, fb:"Σωστό. Ο κύκλος επαναλαμβάνεται συνεχώς."},
+  {q:"Η εικόνα εξόδων περιέχει τις τιμές που προέκυψαν από την εκτέλεση των λογικών πράξεων του προγράμματος.", correct:true, fb:"Σωστό. Από αυτές τις τιμές καθορίζεται τι θα γίνει στις πραγματικές εξόδους."},
+  {q:"Το PLC αποδίδει τιμές στις εξόδους πριν διαβάσει τις εισόδους.", correct:false, fb:"Λάθος. Η σειρά είναι: διάβασμα εισόδων, εκτέλεση προγράμματος, απόδοση τιμών στις εξόδους."}
+];
+
+const matchItems = [
+  {term:"Modular PLC", def:"Αποτελείται από ξεχωριστές μονάδες, που προσαρμόζονται στο πλαίσιο στήριξης."},
+  {term:"Συμπαγές PLC", def:"Περιλαμβάνει τροφοδοτικό, CPU και εισόδους/εξόδους ενσωματωμένα σε μία συσκευή."},
+  {term:"Εικόνα εισόδων", def:"Περιοχή μνήμης όπου αποθηκεύονται οι τιμές 0 ή 1 που διαβάστηκαν από τις εισόδους."},
+  {term:"Εκτέλεση προγράμματος", def:"Το PLC χρησιμοποιεί τις τιμές των εισόδων και εκτελεί λογικές πράξεις."},
+  {term:"Εικόνα εξόδων", def:"Περιοχή μνήμης όπου αποθηκεύονται τα αποτελέσματα για κάθε έξοδο."},
+  {term:"Κύκλος λειτουργίας", def:"Η συνεχής επανάληψη: διάβασμα εισόδων, εκτέλεση προγράμματος, απόδοση τιμών στις εξόδους."}
+];
+
+const scenarioQuestions = [
+  {
+    q:"Μια μεγάλη εγκατάσταση χρειάζεται πολλές εισόδους και εξόδους, πιθανόν με διαφορετικές τάσεις. Ποιος τύπος PLC ταιριάζει περισσότερο;",
+    options:[
+      "Συμπαγές PLC χωρίς καμία δυνατότητα επέκτασης.",
+      "Modular PLC με κατάλληλες μονάδες εισόδων και εξόδων.",
+      "Μόνο ένας απλός διακόπτης χειρός.",
+      "Μηχανικός αυτοματισμός με μοχλούς."
+    ],
+    correct:1,
+    fb:"Το modular PLC είναι πιο ευέλικτο για μεγάλες ή επεκτάσιμες εφαρμογές."
+  },
+  {
+    q:"Μια μικρή εφαρμογή έχει λίγες εισόδους και εξόδους, π.χ. μπουτόν, αισθητήρες και μία μικρή ένδειξη. Ποια επιλογή είναι πιο λογική;",
+    options:[
+      "Ένα συμπαγές PLC, επειδή συγκεντρώνει τις βασικές μονάδες σε μία συσκευή.",
+      "Ένα PLC μόνο με πλαίσιο, χωρίς CPU.",
+      "Ένα modular PLC με δεκάδες άδειες μονάδες υποχρεωτικά.",
+      "Καμία συσκευή με πρόγραμμα."
+    ],
+    correct:0,
+    fb:"Για μικρούς αυτοματισμούς τα συμπαγή PLC είναι συχνά πρακτική λύση."
+  },
+  {
+    q:"Κατά την εκτέλεση του προγράμματος αλλάζει στιγμιαία η κατάσταση ενός διακόπτη εισόδου. Πότε θα ληφθεί κανονικά υπόψη από το PLC;",
+    options:[
+      "Ποτέ, γιατί το PLC δεν διαβάζει εισόδους.",
+      "Μόνο αν αλλάξουμε το όνομα της εξόδου.",
+      "Στο επόμενο διάβασμα εισόδων, στον επόμενο κύκλο λειτουργίας.",
+      "Μόνο αν σταματήσει η τροφοδοσία."
+    ],
+    correct:2,
+    fb:"Το PLC δουλεύει κυκλικά και χρησιμοποιεί τις εικόνες μνήμης κατά την εκτέλεση του προγράμματος."
+  },
+  {
+    q:"Μετά την εκτέλεση του προγράμματος η εικόνα εξόδων γράφει Q1=1 και Q2=0. Τι σημαίνει αυτό πρακτικά στο βήμα απόδοσης τιμών;",
+    options:[
+      "Η Q1 θα πάρει υψηλή τάση και η Q2 χαμηλή τάση.",
+      "Και οι δύο έξοδοι θα πάρουν υποχρεωτικά υψηλή τάση.",
+      "Και οι δύο έξοδοι θα διαγραφούν από το πρόγραμμα.",
+      "Η Q1 θα γίνει είσοδος και η Q2 θα γίνει CPU."
+    ],
+    correct:0,
+    fb:"Η τιμή 1 αντιστοιχεί σε υψηλή τάση στην έξοδο, ενώ η τιμή 0 σε χαμηλή."
+  }
+];
+
+let selectedPill = null;
+
+function renderQuestions(containerId, questions, prefix){
+  const root = document.getElementById(containerId);
+  root.innerHTML = "";
+  questions.forEach((item, idx) => {
+    const q = document.createElement("div");
+    q.className = "question";
+    q.id = `${prefix}_${idx}`;
+    q.innerHTML = `
+      <div class="q-head"><div class="q-no">${idx+1}</div><div class="q-text">${item.q}</div></div>
+      <div class="answers">
+        ${item.options.map((op, oi) => `
+          <label class="option"><input type="radio" name="${prefix}_${idx}" value="${oi}"> <span>${op}</span></label>
+        `).join("")}
+      </div>
+      <div class="feedback" id="fb_${prefix}_${idx}"></div>
+    `;
+    root.appendChild(q);
+  });
+}
+
+function renderTF(){
+  const root = document.getElementById("tfQuestions");
+  root.innerHTML = "";
+  tfQuestions.forEach((item, idx) => {
+    const q = document.createElement("div");
+    q.className = "question";
+    q.id = `tf_${idx}`;
+    q.innerHTML = `
+      <div class="q-head"><div class="q-no">${idx+1}</div><div class="q-text">${item.q}</div></div>
+      <div class="answers">
+        <label class="option"><input type="radio" name="tf_${idx}" value="true"> <span>Σωστό</span></label>
+        <label class="option"><input type="radio" name="tf_${idx}" value="false"> <span>Λάθος</span></label>
+      </div>
+      <div class="feedback" id="fb_tf_${idx}"></div>
+    `;
+    root.appendChild(q);
+  });
+}
+
+function renderMatching(){
+  const pool = document.getElementById("pool");
+  pool.querySelectorAll(".pill").forEach(p => p.remove());
+  const rowRoot = document.getElementById("matchRows");
+  rowRoot.innerHTML = "";
+
+  const termsOrder = ["Εικόνα εξόδων","Modular PLC","Κύκλος λειτουργίας","Συμπαγές PLC","Εκτέλεση προγράμματος","Εικόνα εισόδων"];
+  termsOrder.forEach(term => {
+    const pill = document.createElement("div");
+    pill.className = "pill";
+    pill.draggable = true;
+    pill.textContent = term;
+    pill.dataset.term = term;
+    pill.addEventListener("dragstart", dragStart);
+    pill.addEventListener("click", pillClick);
+    pool.appendChild(pill);
+  });
+
+  const defOrder = [matchItems[2], matchItems[0], matchItems[4], matchItems[1], matchItems[5], matchItems[3]];
+  defOrder.forEach((item, idx) => {
+    const row = document.createElement("div");
+    row.className = "drop-row";
+    row.innerHTML = `
+      <div class="definition">${idx+1}. ${item.def}</div>
+      <div class="dropzone" data-answer="${item.term}" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropToZone(event)" onclick="zoneClick(event)">Άφησε εδώ</div>
+    `;
+    rowRoot.appendChild(row);
+  });
+}
+
+function dragStart(ev){
+  ev.dataTransfer.setData("text/plain", ev.target.dataset.term);
+}
+function allowDrop(ev){
+  ev.preventDefault();
+  const z = ev.target.closest(".dropzone");
+  if(z) z.classList.add("over");
+}
+function dragLeave(ev){
+  const z = ev.target.closest(".dropzone");
+  if(z) z.classList.remove("over");
+}
+function dropToZone(ev){
+  ev.preventDefault();
+  const zone = ev.target.closest(".dropzone");
+  zone.classList.remove("over");
+  const term = ev.dataTransfer.getData("text/plain");
+  placeTermInZone(term, zone);
+}
+function dropToPool(ev){
+  ev.preventDefault();
+  const term = ev.dataTransfer.getData("text/plain");
+  const pill = document.querySelector(`.pill[data-term="${CSS.escape(term)}"]`);
+  if(pill) document.getElementById("pool").appendChild(pill);
+}
+function pillClick(ev){
+  document.querySelectorAll(".pill").forEach(p => p.classList.remove("selected"));
+  selectedPill = ev.currentTarget.dataset.term;
+  ev.currentTarget.classList.add("selected");
+}
+function zoneClick(ev){
+  if(!selectedPill) return;
+  placeTermInZone(selectedPill, ev.currentTarget);
+  selectedPill = null;
+  document.querySelectorAll(".pill").forEach(p => p.classList.remove("selected"));
+}
+function placeTermInZone(term, zone){
+  const pill = document.querySelector(`.pill[data-term="${CSS.escape(term)}"]`);
+  if(!pill || !zone) return;
+  const existing = zone.querySelector(".pill");
+  if(existing) document.getElementById("pool").appendChild(existing);
+  zone.innerHTML = "";
+  zone.appendChild(pill);
+  zone.classList.remove("correct","wrong");
+}
+
+function gradeRadioQuestions(questions, prefix){
+  let score = 0;
+  questions.forEach((item, idx) => {
+    const qEl = document.getElementById(`${prefix}_${idx}`);
+    const fb = document.getElementById(`fb_${prefix}_${idx}`);
+    const selected = document.querySelector(`input[name="${prefix}_${idx}"]:checked`);
+    qEl.classList.remove("correct","wrong");
+    fb.className = "feedback";
+    if(selected && Number(selected.value) === item.correct){
+      score++;
+      qEl.classList.add("correct");
+      fb.classList.add("ok");
+      fb.textContent = "Σωστό. " + item.fb;
+    } else {
+      qEl.classList.add("wrong");
+      fb.classList.add("bad");
+      const right = item.options[item.correct];
+      fb.textContent = `Λάθος. Σωστή απάντηση: «${right}». ${item.fb}`;
+    }
+  });
+  return score;
+}
+
+function gradeTF(){
+  let score = 0;
+  tfQuestions.forEach((item, idx) => {
+    const qEl = document.getElementById(`tf_${idx}`);
+    const fb = document.getElementById(`fb_tf_${idx}`);
+    const selected = document.querySelector(`input[name="tf_${idx}"]:checked`);
+    qEl.classList.remove("correct","wrong");
+    fb.className = "feedback";
+    const val = selected ? selected.value === "true" : null;
+    if(val === item.correct){
+      score++;
+      qEl.classList.add("correct");
+      fb.classList.add("ok");
+      fb.textContent = "Σωστό. " + item.fb;
+    } else {
+      qEl.classList.add("wrong");
+      fb.classList.add("bad");
+      fb.textContent = `Λάθος. Σωστή απάντηση: «${item.correct ? "Σωστό" : "Λάθος"}». ${item.fb}`;
+    }
+  });
+  return score;
+}
+
+function gradeMatching(){
+  let score = 0;
+  document.querySelectorAll(".dropzone").forEach(zone => {
+    zone.classList.remove("correct","wrong");
+    const pill = zone.querySelector(".pill");
+    const ok = pill && pill.dataset.term === zone.dataset.answer;
+    if(ok){ score++; zone.classList.add("correct"); }
+    else { zone.classList.add("wrong"); }
+  });
+  return score;
+}
+
+function gradeQuiz(){
+  const mcScore = gradeRadioQuestions(mcQuestions,"mc");
+  const tfScore = gradeTF();
+  const matchScore = gradeMatching();
+  const scScore = gradeRadioQuestions(scenarioQuestions,"sc");
+  const total = mcScore + tfScore + matchScore + scScore;
+  const max = mcQuestions.length + tfQuestions.length + matchItems.length + scenarioQuestions.length;
+  const pct = Math.round((total/max)*100);
+  const box = document.getElementById("resultBox");
+  document.getElementById("scoreLine").textContent = `Βαθμολογία: ${total}/${max} (${pct}%)`;
+  document.getElementById("scoreDetails").textContent = `Πολλαπλής: ${mcScore}/${mcQuestions.length} · Σ/Λ: ${tfScore}/${tfQuestions.length} · Αντιστοίχιση: ${matchScore}/${matchItems.length} · Σενάρια: ${scScore}/${scenarioQuestions.length}`;
+  box.classList.add("show");
+  box.scrollIntoView({behavior:"smooth", block:"end"});
+}
+
+function resetMatching(){
+  renderMatching();
+}
+
+function resetQuiz(){
+  document.querySelectorAll("input[type='radio']").forEach(i => i.checked = false);
+  document.querySelectorAll(".question").forEach(q => q.classList.remove("correct","wrong"));
+  document.querySelectorAll(".feedback").forEach(f => { f.className = "feedback"; f.textContent = ""; });
+  document.getElementById("resultBox").classList.remove("show");
+  renderMatching();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+renderQuestions("mcQuestions", mcQuestions, "mc");
+renderTF();
+renderMatching();
+renderQuestions("scenarioQuestions", scenarioQuestions, "sc");
+</script>
+</body>
+</html>
