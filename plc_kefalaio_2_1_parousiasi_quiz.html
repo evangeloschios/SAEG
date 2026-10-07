@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLC – Κεφάλαιο 2.1 | Παρουσίαση & Quiz</title>
+<style>
+  :root{
+    --bg:#0d1b2a;
+    --panel:#132238;
+    --panel2:#19314d;
+    --accent:#4cc9f0;
+    --accent2:#80ed99;
+    --text:#f4f8fb;
+    --muted:#b9c9d8;
+    --warn:#ffd166;
+    --bad:#ff6b6b;
+    --good:#57cc99;
+    --shadow:0 18px 50px rgba(0,0,0,.28);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:linear-gradient(135deg,#08131f,#102843);color:var(--text);font-family:Segoe UI,Arial,sans-serif}
+  body{overflow:hidden}
+  button{font:inherit}
+  .deck{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .slide{
+    position:absolute;
+    inset:0;
+    display:none;
+    padding:5.5vh 7vw 9vh;
+    overflow:auto;
+  }
+  .slide.active{display:block;animation:fade .28s ease}
+  @keyframes fade{from{opacity:.25;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .wrap{max-width:1180px;margin:0 auto}
+  .kicker{
+    color:var(--accent);
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    font-size:clamp(.8rem,1.5vw,1rem);
+    margin-bottom:.5rem
+  }
+  h1{
+    margin:.15em 0 .35em;
+    font-size:clamp(2.2rem,5.6vw,5rem);
+    line-height:1.02
+  }
+  h2{
+    margin:.1em 0 .55em;
+    font-size:clamp(1.8rem,4vw,3.45rem);
+    line-height:1.08
+  }
+  h3{margin:.15em 0 .4em;font-size:clamp(1.15rem,2.2vw,1.65rem)}
+  p,li{
+    font-size:clamp(1.02rem,1.8vw,1.38rem);
+    line-height:1.52
+  }
+  .lead{max-width:900px;color:var(--muted);font-size:clamp(1.1rem,2vw,1.55rem)}
+  .hero{
+    min-height:75vh;
+    display:grid;
+    grid-template-columns:1.05fr .95fr;
+    align-items:center;
+    gap:4vw;
+  }
+  .plc-art{
+    background:linear-gradient(145deg,#12243a,#1e3b5d);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:28px;
+    padding:28px;
+    box-shadow:var(--shadow)
+  }
+  .plc-box{
+    background:#e8edf2;
+    color:#132238;
+    border-radius:18px;
+    padding:22px;
+    box-shadow:inset 0 0 0 3px #bcc7d1;
+  }
+  .plc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;font-weight:800}
+  .lights{display:flex;gap:8px}
+  .light{width:14px;height:14px;border-radius:50%;background:#8d99ae}
+  .light.on{background:#22c55e;box-shadow:0 0 16px rgba(34,197,94,.7)}
+  .io-row{display:grid;grid-template-columns:repeat(8,1fr);gap:7px;margin:10px 0}
+  .io{height:28px;border-radius:6px;background:#243b53;position:relative}
+  .io::after{content:"";position:absolute;inset:7px;border-radius:3px;background:#4cc9f0}
+  .screen{background:#153a3a;color:#a7f3d0;padding:16px;border-radius:10px;font-family:Consolas,monospace;margin:16px 0}
+  .grid2,.grid3{
+    display:grid;
+    gap:22px
+  }
+  .grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .card{
+    background:linear-gradient(145deg,rgba(28,52,79,.97),rgba(17,34,56,.97));
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:22px;
+    padding:24px;
+    box-shadow:var(--shadow)
+  }
+  .card strong{color:#fff}
+  .icon{
+    width:56px;height:56px;border-radius:16px;
+    display:grid;place-items:center;
+    background:rgba(76,201,240,.13);
+    border:1px solid rgba(76,201,240,.3);
+    font-size:1.7rem;margin-bottom:13px
+  }
+  .big-number{font-size:clamp(2.3rem,5vw,4rem);font-weight:900;color:var(--accent)}
+  .compare{
+    display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:stretch
+  }
+  .vs{
+    align-self:center;
+    width:56px;height:56px;border-radius:50%;
+    display:grid;place-items:center;background:var(--accent);color:#042033;font-weight:900
+  }
+  ul.clean{margin:.3rem 0 0;padding-left:1.25em}
+  ul.clean li{margin:.45em 0}
+  .highlight{
+    background:rgba(128,237,153,.12);
+    border-left:5px solid var(--accent2);
+    padding:16px 18px;border-radius:12px;margin-top:18px
+  }
+  .warning{
+    background:rgba(255,209,102,.10);
+    border-left:5px solid var(--warn);
+    padding:16px 18px;border-radius:12px;margin-top:18px
+  }
+  .summary-table{
+    width:100%;border-collapse:collapse;font-size:clamp(.95rem,1.55vw,1.18rem);
+    background:rgba(255,255,255,.035);border-radius:18px;overflow:hidden
+  }
+  .summary-table th,.summary-table td{padding:15px 17px;border-bottom:1px solid rgba(255,255,255,.09);text-align:left}
+  .summary-table th{background:rgba(76,201,240,.12);color:#dff7ff}
+  .summary-table tr:last-child td{border-bottom:0}
+  .pill{
+    display:inline-block;padding:.35rem .65rem;border-radius:999px;
+    background:rgba(76,201,240,.13);color:#b9efff;font-weight:700;font-size:.92rem
+  }
+  .quizbox{max-width:980px;margin:0 auto}
+  .q-card{
+    background:rgba(18,36,58,.96);
+    border:1px solid rgba(255,255,255,.11);
+    border-radius:22px;padding:24px;margin:16px 0;box-shadow:var(--shadow)
+  }
+  .q-title{font-size:clamp(1.05rem,1.75vw,1.3rem);font-weight:800;margin-bottom:14px}
+  .option{
+    display:block;width:100%;text-align:left;
+    margin:9px 0;padding:13px 15px;border-radius:14px;
+    border:1px solid rgba(255,255,255,.14);
+    background:#17304d;color:var(--text);cursor:pointer;transition:.18s
+  }
+  .option:hover{transform:translateY(-1px);border-color:var(--accent)}
+  .option.correct{background:rgba(87,204,153,.22);border-color:var(--good)}
+  .option.wrong{background:rgba(255,107,107,.18);border-color:var(--bad)}
+  .option:disabled{cursor:default;opacity:.95}
+  .feedback{display:none;margin-top:12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.06);color:#dce8f2}
+  .feedback.show{display:block}
+  .score{
+    margin-top:18px;padding:18px;border-radius:16px;background:rgba(76,201,240,.11);
+    border:1px solid rgba(76,201,240,.28);font-size:1.2rem;font-weight:800
+  }
+  .quiz-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+  .btn{
+    border:0;border-radius:12px;padding:11px 17px;cursor:pointer;font-weight:800
+  }
+  .btn-primary{background:var(--accent);color:#082032}
+  .btn-secondary{background:#233f60;color:#fff;border:1px solid rgba(255,255,255,.13)}
+  .footer-note{color:var(--muted);font-size:.95rem;margin-top:15px}
+  .nav{
+    position:fixed;left:0;right:0;bottom:0;
+    display:flex;justify-content:center;align-items:center;gap:12px;
+    padding:12px 18px;background:linear-gradient(180deg,transparent,rgba(4,11,19,.93));
+    z-index:50
+  }
+  .nav button{
+    border:1px solid rgba(255,255,255,.16);
+    background:#17304d;color:#fff;border-radius:12px;
+    padding:10px 16px;cursor:pointer;font-weight:800
+  }
+  .nav button:hover{border-color:var(--accent)}
+  .counter{min-width:88px;text-align:center;color:#d7e8f5;font-weight:700}
+  .progress{
+    position:fixed;top:0;left:0;right:0;height:5px;background:rgba(255,255,255,.07);z-index:60
+  }
+  .progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:.2s}
+  .top-actions{
+    position:fixed;right:16px;top:14px;z-index:70;display:flex;gap:8px
+  }
+  .top-actions button{
+    border:1px solid rgba(255,255,255,.13);background:rgba(11,31,51,.82);color:#fff;
+    border-radius:10px;padding:8px 11px;cursor:pointer
+  }
+  .mini{font-size:.9rem;color:var(--muted)}
+  @media (max-width:850px){
+    body{overflow:auto}
+    .deck{height:auto;min-height:100vh}
+    .slide{position:relative;display:none;min-height:100vh;padding:72px 20px 90px}
+    .slide.active{display:block}
+    .hero,.grid2,.grid3,.compare{grid-template-columns:1fr}
+    .vs{margin:auto}
+    .nav{position:fixed}
+  }
+</style>
+</head>
+<body>
+<div class="progress"><span id="progressBar"></span></div>
+<div class="top-actions">
+  <button onclick="toggleFull()">⛶ Πλήρης οθόνη</button>
+</div>
+
+<div class="deck" id="deck">
+
+  <section class="slide active">
+    <div class="wrap hero">
+      <div>
+        <div class="kicker">Γ΄ ΕΠΑ.Λ. • Συστήματα Αυτοματισμών</div>
+        <h1>PLC<br><span style="color:var(--accent)">Κεφάλαιο 2.1</span></h1>
+        <p class="lead">Πλεονεκτήματα των Προγραμματιζόμενων Λογικών Ελεγκτών</p>
+        <p><span class="pill">Παρουσίαση + Quiz εξάσκησης</span></p>
+        <p class="mini">Ε. Κοκκώδης</p>
+      </div>
+      <div class="plc-art" aria-label="Σχηματική απεικόνιση PLC">
+        <div class="plc-box">
+          <div class="plc-top"><span>PLC</span><span class="lights"><i class="light on"></i><i class="light on"></i><i class="light"></i></span></div>
+          <div class="io-row"><i class="io"></i><i class="io"></i><i class="io"></i><i class="io"></i><i class="io"></i><i class="io"></i><i class="io"></i><i class="io"></i></div>
+          <div class="screen">PROGRAM = FLEXIBILITY<br>WIRING = LESS<br>MAINTENANCE = EASIER</div>
+          <div class="io-row"><i class="io"></i><i class="io"></i><i class="io"></i><i class="io"></i><i class="io"></i><i class="io"></i><i class="io"></i><i class="io"></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">2.1 • Η βασική ιδέα</div>
+      <h2>Λιγότερα υλικά, λιγότερη καλωδίωση</h2>
+      <div class="compare">
+        <div class="card">
+          <div class="icon">🔌</div>
+          <h3>Κλασικός αυτοματισμός</h3>
+          <ul class="clean">
+            <li>Πολλά βοηθητικά στοιχεία.</li>
+            <li>Περισσότερες καλωδιώσεις.</li>
+            <li>Περισσότερος χρόνος μελέτης και κατασκευής.</li>
+          </ul>
+        </div>
+        <div class="vs">→</div>
+        <div class="card">
+          <div class="icon">🧠</div>
+          <h3>Αυτοματισμός με PLC</h3>
+          <ul class="clean">
+            <li>Μικρότερος και απλούστερος πίνακας.</li>
+            <li>Η λειτουργία καθορίζεται κυρίως από το πρόγραμμα.</li>
+            <li>Μικρότερος χρόνος κατασκευής.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="highlight"><strong>Κεντρικό μήνυμα:</strong> μεγάλο μέρος της πολυπλοκότητας μεταφέρεται από την καλωδίωση στο πρόγραμμα.</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Πλεονεκτήματα για τον κατασκευαστή</div>
+      <h2>Κόστος και χρόνος κατασκευής</h2>
+      <div class="grid2">
+        <div class="card">
+          <div class="icon">€</div>
+          <h3>Μικρότερο κόστος υλικού</h3>
+          <p>Ένα PLC μπορεί να αντικαταστήσει λειτουργίες που αλλιώς θα απαιτούσαν μεγάλο αριθμό βοηθητικών ηλεκτρονόμων, χρονικών και απαριθμητών.</p>
+        </div>
+        <div class="card">
+          <div class="icon">⏱️</div>
+          <h3>Πολύ μικρότερος χρόνος</h3>
+          <p>Η κατασκευή και η προσαρμογή του αυτοματισμού γίνεται ταχύτερα από έναν αντίστοιχο πολύπλοκο πίνακα καλωδιωμένης λογικής.</p>
+        </div>
+      </div>
+      <div class="highlight"><strong>Άρα:</strong> λιγότερα επιμέρους υλικά + απλούστερη κατασκευή = πιο γρήγορη υλοποίηση.</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Πλεονέκτημα 1</div>
+      <h2>Μικρότερο κόστος συντήρησης</h2>
+      <div class="grid3">
+        <div class="card"><div class="icon">🧰</div><h3>Λιγότερες βλάβες στον πίνακα</h3><p>Η μείωση των επιμέρους στοιχείων και συνδέσεων περιορίζει πιθανά σημεία αστοχίας.</p></div>
+        <div class="card"><div class="icon">🔎</div><h3>Ταχύτερος εντοπισμός</h3><p>Η διάγνωση μιας δυσλειτουργίας μπορεί να γίνει ευκολότερα σε σχέση με πολύπλοκη καλωδίωση.</p></div>
+        <div class="card"><div class="icon">🏭</div><h3>Μικρότερη διακοπή παραγωγής</h3><p>Όσο συντομότερα εντοπίζεται και αποκαθίσταται ένα πρόβλημα, τόσο μικρότερη μπορεί να είναι η καθυστέρηση στην παραγωγή.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Πλεονέκτημα 2</div>
+      <h2>Ευελιξία στις αλλαγές</h2>
+      <div class="card">
+        <div class="big-number">PROGRAM</div>
+        <p>Όταν αλλάζει η ζητούμενη λειτουργία του αυτοματισμού, συχνά αρκεί η <strong>τροποποίηση του προγράμματος</strong>, χωρίς εκτεταμένες αλλαγές στην καλωδίωση.</p>
+        <div class="highlight"><strong>Παράδειγμα:</strong> αλλαγή της σειράς λειτουργίας δύο μηχανών → τροποποίηση λογικής στο πρόγραμμα αντί για ανακατασκευή μεγάλου μέρους του πίνακα.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Πλεονέκτημα 3</div>
+      <h2>Εύκολη επέκταση</h2>
+      <div class="grid2">
+        <div class="card">
+          <div class="icon">➕</div>
+          <h3>Με αλλαγή προγράμματος</h3>
+          <p>Νέες λειτουργίες μπορούν να προστεθούν όταν το υπάρχον υλικό επαρκεί.</p>
+        </div>
+        <div class="card">
+          <div class="icon">I/O</div>
+          <h3>Με νέες εισόδους / εξόδους</h3>
+          <p>Όταν χρειάζονται περισσότερα σήματα, μπορεί να γίνει επέκταση με πρόσθετες μονάδες εισόδων και εξόδων.</p>
+        </div>
+      </div>
+      <div class="highlight"><strong>Κλειδί:</strong> το σύστημα μπορεί να μεγαλώσει χωρίς να ξανασχεδιαστεί από την αρχή ολόκληρος ο αυτοματισμός.</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Πλεονεκτήματα 4–6</div>
+      <h2>Περισσότερες δυνατότητες</h2>
+      <div class="grid3">
+        <div class="card"><div class="icon">🧩</div><h3>Σύνθετη λογική</h3><p>Μπορούν να υλοποιηθούν πιο πολύπλοκες επεξεργασίες από ό,τι με απλή καλωδιωμένη λογική.</p></div>
+        <div class="card"><div class="icon">🖥️</div><h3>Διασύνδεση</h3><p>Το βιβλίο αναφέρει δυνατότητες σύνδεσης με κεντρικό υπολογιστή και άλλα συστήματα της εγκατάστασης.</p></div>
+        <div class="card"><div class="icon">📦</div><h3>Μικρός χώρος</h3><p>Το PLC καταλαμβάνει πολύ μικρότερο χώρο από έναν αντίστοιχο μεγάλο πίνακα κλασικού αυτοματισμού.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Σημαντική παρατήρηση του βιβλίου</div>
+      <h2>Είναι πάντα η καλύτερη επιλογή;</h2>
+      <div class="card">
+        <p>Το βιβλίο επισημαίνει ότι η χρήση PLC <strong>δεν είναι απαραίτητα οικονομικά συμφέρουσα σε κάθε πολύ απλή εφαρμογή</strong>, ιδιαίτερα όταν ο αυτοματισμός είναι απλός και το κύριο κόστος βρίσκεται στα στοιχεία ισχύος.</p>
+        <div class="warning"><strong>Επίσης:</strong> αναφέρεται ως δυσκολία η ανεπαρκής εκπαίδευση/ενημέρωση τεχνικών στη χρήση PLC. Αυτό παρουσιάζεται ως παρατήρηση του βιβλίου και όχι ως γενικός σημερινός κανόνας.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Ανακεφαλαίωση</div>
+      <h2>Τα πλεονεκτήματα με μία ματιά</h2>
+      <table class="summary-table">
+        <tr><th>Πλεονέκτημα</th><th>Τι σημαίνει στην πράξη</th></tr>
+        <tr><td>Μικρότερο κόστος κατασκευής</td><td>Λιγότερα βοηθητικά στοιχεία και μικρότερος πίνακας</td></tr>
+        <tr><td>Μικρότερος χρόνος κατασκευής</td><td>Λιγότερη πολύπλοκη καλωδίωση</td></tr>
+        <tr><td>Μικρότερο κόστος συντήρησης</td><td>Λιγότερα σημεία βλάβης και ευκολότερη αποκατάσταση</td></tr>
+        <tr><td>Ευελιξία</td><td>Αλλαγή λειτουργίας κυρίως μέσω προγράμματος</td></tr>
+        <tr><td>Εύκολη επέκταση</td><td>Αλλαγή προγράμματος ή προσθήκη I/O</td></tr>
+        <tr><td>Σύνθετες δυνατότητες</td><td>Πιο πολύπλοκες και «έξυπνες» λειτουργίες</td></tr>
+        <tr><td>Διασύνδεση</td><td>Σύνδεση με υπολογιστικά/άλλα συστήματα</td></tr>
+        <tr><td>Μικρός χώρος</td><td>Μικρότερος πίνακας σε σχέση με κλασικό αυτοματισμό</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="wrap quizbox">
+      <div class="kicker">Quiz εξάσκησης</div>
+      <h2>Έλεγξε τι θυμάσαι</h2>
+      <p class="lead">10 ερωτήσεις • άμεση ανατροφοδότηση • χωρίς αποθήκευση ή αποστολή αποτελεσμάτων.</p>
+      <div class="card">
+        <h3>Οδηγίες</h3>
+        <ul class="clean">
+          <li>Επίλεξε μία απάντηση σε κάθε ερώτηση.</li>
+          <li>Θα βλέπεις αμέσως αν είναι σωστή και γιατί.</li>
+          <li>Στο τέλος εμφανίζεται συνολική βαθμολογία.</li>
+        </ul>
+        <button class="btn btn-primary" onclick="goToQuiz()">Έναρξη Quiz →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="wrap quizbox">
+      <div class="kicker">Quiz • Κεφάλαιο 2.1</div>
+      <h2>Ερωτήσεις εξάσκησης</h2>
+      <div id="quiz"></div>
+      <div class="quiz-actions">
+        <button class="btn btn-primary" onclick="showScore()">Δείξε βαθμολογία</button>
+        <button class="btn btn-secondary" onclick="resetQuiz()">Ξανά από την αρχή</button>
+      </div>
+      <div id="scoreBox" class="score" style="display:none"></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Τέλος</div>
+      <h2>Μπορείς να εξηγήσεις το «γιατί»;</h2>
+      <div class="grid2">
+        <div class="card">
+          <h3>Στόχος 1</h3>
+          <p>Να μπορείς να αναφέρεις τα βασικά πλεονεκτήματα του PLC σε σχέση με τον κλασικό αυτοματισμό.</p>
+        </div>
+        <div class="card">
+          <h3>Στόχος 2</h3>
+          <p>Να μπορείς να συνδέεις κάθε πλεονέκτημα με ένα πρακτικό παράδειγμα από έναν πίνακα αυτοματισμού.</p>
+        </div>
+      </div>
+      <div class="highlight">Επόμενο βήμα στο βιβλίο: <strong>§2.2 – Η δομή ενός προγραμματιζόμενου λογικού ελεγκτή.</strong></div>
+      <p class="mini">Ε. Κοκκώδης</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button onclick="prevSlide()">← Προηγούμενο</button>
+  <div class="counter"><span id="current">1</span> / <span id="total"></span></div>
+  <button onclick="nextSlide()">Επόμενο →</button>
+</div>
+
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+let idx=0;
+const total=document.getElementById('total');
+const current=document.getElementById('current');
+const progress=document.getElementById('progressBar');
+total.textContent=slides.length;
+
+function showSlide(n){
+  idx=Math.max(0,Math.min(slides.length-1,n));
+  slides.forEach((s,i)=>s.classList.toggle('active',i===idx));
+  current.textContent=idx+1;
+  progress.style.width=((idx+1)/slides.length*100)+'%';
+  window.scrollTo(0,0);
+}
+function nextSlide(){showSlide(idx+1)}
+function prevSlide(){showSlide(idx-1)}
+function goToQuiz(){showSlide(10)}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='PageDown')nextSlide();
+  if(e.key==='ArrowLeft'||e.key==='PageUp')prevSlide();
+});
+function toggleFull(){
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
+}
+showSlide(0);
+
+const questions=[
+  {
+    q:"1. Ποιο από τα παρακάτω είναι βασικό πλεονέκτημα του PLC για τον κατασκευαστή του πίνακα;",
+    opts:["Απαιτεί περισσότερους βοηθητικούς ηλεκτρονόμους","Μειώνει τον χρόνο κατασκευής του αυτοματισμού","Απαιτεί περισσότερη καλωδίωση","Αυξάνει το μέγεθος του πίνακα"],
+    a:1,
+    exp:"Σωστά: το βιβλίο τονίζει ότι ο χρόνος κατασκευής είναι πολύ μικρότερος σε σχέση με έναν πολύπλοκο κλασικό πίνακα."
+  },
+  {
+    q:"2. Πώς αλλάζει συνήθως η λειτουργία ενός αυτοματισμού με PLC;",
+    opts:["Με αντικατάσταση όλων των καλωδίων","Με αλλαγή του προγράμματος","Μόνο με αλλαγή κινητήρα","Με προσθήκη ασφαλειών"],
+    a:1,
+    exp:"Η ευελιξία είναι βασικό πλεονέκτημα: πολλές αλλαγές γίνονται με τροποποίηση του προγράμματος."
+  },
+  {
+    q:"3. Πώς μπορεί να επεκταθεί ένας αυτοματισμός με PLC;",
+    opts:["Μόνο με μεγαλύτερο πίνακα","Μόνο με περισσότερους ηλεκτρονόμους","Με αλλαγή προγράμματος ή/και προσθήκη μονάδων I/O","Δεν μπορεί να επεκταθεί"],
+    a:2,
+    exp:"Το βιβλίο αναφέρει επέκταση είτε με αλλαγή προγράμματος είτε με νέες μονάδες εισόδων/εξόδων."
+  },
+  {
+    q:"4. Ποια σχέση έχει το PLC με το κόστος συντήρησης;",
+    opts:["Το αυξάνει πάντα","Δεν το επηρεάζει","Μπορεί να το ελαχιστοποιήσει","Απαιτεί συνεχώς ανταλλακτικά ηλεκτρονόμων"],
+    a:2,
+    exp:"Η μείωση βλαβών στον πίνακα και ο ευκολότερος εντοπισμός/αποκατάσταση συμβάλλουν σε μικρότερο κόστος συντήρησης."
+  },
+  {
+    q:"5. Ποιο από τα παρακάτω ΔΕΝ αποτελεί πλεονέκτημα που αναφέρεται στην §2.1;",
+    opts:["Ευκολότερη τροποποίηση λειτουργίας","Εύκολη επέκταση","Μεγαλύτερος απαιτούμενος χώρος πίνακα","Δυνατότητα σύνθετων επεξεργασιών"],
+    a:2,
+    exp:"Το αντίθετο αναφέρεται: το PLC καταλαμβάνει ελάχιστο χώρο σε σχέση με αντίστοιχο μεγάλο κλασικό πίνακα."
+  },
+  {
+    q:"6. Τι συμβαίνει με την πολυπλοκότητα όταν χρησιμοποιούμε PLC;",
+    opts:["Μεταφέρεται σε μεγάλο βαθμό από την καλωδίωση στο πρόγραμμα","Εξαφανίζεται κάθε ανάγκη σχεδιασμού","Αυξάνονται υποχρεωτικά οι καλωδιώσεις","Χρειάζονται περισσότεροι χρονικοί ηλεκτρονόμοι"],
+    a:0,
+    exp:"Με PLC πολλές λειτουργίες υλοποιούνται προγραμματιστικά αντί με εκτεταμένη καλωδίωση βοηθητικών στοιχείων."
+  },
+  {
+    q:"7. Ποιο πρακτικό όφελος μπορεί να έχει η ταχύτερη διάγνωση βλάβης;",
+    opts:["Μεγαλύτερη διακοπή παραγωγής","Μικρότερη καθυστέρηση παραγωγής","Μεγαλύτερη κατανάλωση ενέργειας","Περισσότερη καλωδίωση"],
+    a:1,
+    exp:"Η ταχύτερη εύρεση και αποκατάσταση μιας βλάβης μπορεί να μειώσει τον χρόνο διακοπής της παραγωγής."
+  },
+  {
+    q:"8. Η §2.1 αναφέρει ότι το PLC μπορεί να συνδέεται:",
+    opts:["Μόνο με έναν κινητήρα","Με κεντρικό υπολογιστή και άλλα συστήματα","Μόνο με ασφάλειες","Μόνο με ένα μπουτόν START"],
+    a:1,
+    exp:"Στα πλεονεκτήματα αναφέρονται δυνατότητες σύνδεσης με κεντρικό υπολογιστή και άλλα συστήματα της εγκατάστασης."
+  },
+  {
+    q:"9. Ποια πρόταση αποδίδει σωστά την παρατήρηση του βιβλίου για πολύ απλές εφαρμογές;",
+    opts:["Το PLC είναι υποχρεωτικό σε κάθε εγκατάσταση","Το PLC δεν είναι ποτέ κατάλληλο","Σε ορισμένες πολύ απλές εφαρμογές μπορεί να μην είναι η οικονομικότερη λύση","Ο κλασικός αυτοματισμός είναι πάντα φθηνότερος"],
+    a:2,
+    exp:"Το βιβλίο δεν παρουσιάζει το PLC ως οικονομικά αναγκαίο σε κάθε απλή εφαρμογή."
+  },
+  {
+    q:"10. Ποια φράση συνοψίζει καλύτερα τα πλεονεκτήματα του PLC;",
+    opts:["Περισσότερα υλικά και περισσότερος χώρος","Λιγότερη ευελιξία αλλά απλούστερος κινητήρας","Μικρότερος πίνακας, ευκολότερες αλλαγές και επεκτάσεις, περισσότερες δυνατότητες","Κατάργηση όλων των ηλεκτρικών στοιχείων ισχύος"],
+    a:2,
+    exp:"Αυτή η επιλογή συγκεντρώνει τα βασικά πλεονεκτήματα που αναπτύσσονται στην §2.1."
+  }
+];
+
+let answered=Array(questions.length).fill(null);
+
+function renderQuiz(){
+  const qz=document.getElementById('quiz');
+  qz.innerHTML='';
+  questions.forEach((item,qi)=>{
+    const card=document.createElement('div');
+    card.className='q-card';
+    const title=document.createElement('div');
+    title.className='q-title';
+    title.textContent=item.q;
+    card.appendChild(title);
+    item.opts.forEach((op,oi)=>{
+      const b=document.createElement('button');
+      b.className='option';
+      b.textContent=op;
+      b.onclick=()=>answer(qi,oi,card);
+      card.appendChild(b);
+    });
+    const fb=document.createElement('div');
+    fb.className='feedback';
+    fb.id='fb-'+qi;
+    card.appendChild(fb);
+    qz.appendChild(card);
+  });
+}
+function answer(qi,oi,card){
+  if(answered[qi]!==null)return;
+  answered[qi]=oi;
+  const buttons=[...card.querySelectorAll('.option')];
+  buttons.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===questions[qi].a)b.classList.add('correct');
+    if(i===oi && i!==questions[qi].a)b.classList.add('wrong');
+  });
+  const fb=document.getElementById('fb-'+qi);
+  const ok=oi===questions[qi].a;
+  fb.innerHTML=(ok?'✅ <strong>Σωστά.</strong> ':'❌ <strong>Όχι ακριβώς.</strong> ')+questions[qi].exp;
+  fb.classList.add('show');
+}
+function showScore(){
+  const count=answered.filter((v,i)=>v===questions[i].a).length;
+  const done=answered.filter(v=>v!==null).length;
+  const box=document.getElementById('scoreBox');
+  box.style.display='block';
+  if(done<questions.length){
+    box.textContent=`Έχεις απαντήσει ${done} από ${questions.length} ερωτήσεις. Σωστές μέχρι τώρα: ${count}.`;
+  }else{
+    const pct=Math.round(count/questions.length*100);
+    let msg=pct>=80?'Πολύ καλή κατανόηση της §2.1.':pct>=60?'Καλή προσπάθεια — ξαναδές τα σημεία όπου έγινε λάθος.':'Χρειάζεται μία ακόμη γρήγορη επανάληψη της παρουσίασης.';
+    box.textContent=`Βαθμολογία: ${count}/${questions.length} (${pct}%). ${msg}`;
+  }
+}
+function resetQuiz(){
+  answered=Array(questions.length).fill(null);
+  document.getElementById('scoreBox').style.display='none';
+  renderQuiz();
+}
+renderQuiz();
+</script>
+</body>
+</html>
